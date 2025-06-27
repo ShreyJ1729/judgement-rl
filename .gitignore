@@ -1,0 +1,10 @@
+venv/
+runs/
+logs/
+models/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
