@@ -15,6 +15,12 @@ Judgement is a trick-taking card game where players bid on the number of tricks 
 - **Real-time Monitoring**: Live training progress visualization
 - **Configuration Management**: Flexible configuration system
 
+## Usage
+
+All you need to know to run this (but pip install requirements first)
+
+`python3 scripts/play_against_ai.py`
+
 ## Installation
 
 ### Prerequisites
