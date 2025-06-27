@@ -1,16 +1,25 @@
 #!/usr/bin/env python3
 """
-Demo script for real-time training monitoring.
-Shows how to use the monitoring system with different training scenarios.
+Demo script for real-time monitoring of training progress.
 """
 
 import torch
 import numpy as np
 import time
-from realtime_monitor import create_monitor_and_callback, RealtimeMonitor
-from judgement_env import JudgementEnv
-from state_encoder import StateEncoder
-from agent import PPOAgent
+import sys
+import os
+
+# Add the src directory to the path so we can import from judgement_rl
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+
+from judgement_rl.environment.judgement_env import JudgementEnv
+from judgement_rl.utils.state_encoder import StateEncoder
+from judgement_rl.agents.agent import PPOAgent
+
+# Import realtime_monitor from the same directory
+import realtime_monitor
+
+from realtime_monitor import create_monitor_and_callback
 
 
 def demo_single_agent_monitoring():
@@ -36,7 +45,7 @@ def demo_single_agent_monitoring():
     )
 
     # Create monitor and callback
-    monitor, callback = create_monitor_and_callback(["Demo Agent"])
+    monitor, callback = realtime_monitor.create_monitor_and_callback(["Demo Agent"])
     monitor.start_monitoring()
 
     print("Real-time monitoring started. Watch the graphs update!")
@@ -112,7 +121,7 @@ def demo_multi_agent_monitoring():
 
     # Create monitor and callback
     agent_names = list(agents.keys())
-    monitor, callback = create_monitor_and_callback(agent_names)
+    monitor, callback = realtime_monitor.create_monitor_and_callback(agent_names)
     monitor.start_monitoring()
 
     print("Real-time monitoring started for multiple agents!")

@@ -18,6 +18,12 @@ Welcome to the "Judgement AI" project! This repository will guide you through bu
   - [Step 8: Evaluate the Agent](#step-8-evaluate-the-agent)
 - [Real-time Monitoring](#real-time-monitoring)
 - [Configuration](#configuration)
+- [GUI Interface - Play Against the AI!](#gui-interface---play-against-the-ai)
+  - [Quick Start](#quick-start)
+  - [Features](#features)
+  - [GUI Layout](#gui-layout)
+  - [Testing the GUI](#testing-the-gui)
+  - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Resources](#resources)
 
@@ -56,6 +62,11 @@ Here's how the project is organized:
 - `heuristic_agent.py`: Simple heuristic-based agent for comparison.
 - `demo_ppo.py`: Demonstration script for trained agents.
 - `test_implementation.py`: Comprehensive testing suite.
+- `gui_interface.py`: **NEW!** GUI interface for playing against the trained AI agent.
+- `play_against_ai.py`: **NEW!** Simple launcher script for the GUI interface.
+- `test_gui.py`: **NEW!** Test script to verify GUI components work correctly.
+- `demo_gui.py`: **NEW!** Demo script showing GUI functionality.
+- `GUI_README.md`: **NEW!** Detailed documentation for the GUI interface.
 - `models/`: Directory for saving trained models.
 - `requirements.txt`: Python dependencies.
 - `README.md`: This file.
@@ -399,6 +410,55 @@ config = TrainingConfig(
 - Self-play settings (number of agents, policy noise)
 - Monitoring options (update interval, max points)
 - Model saving and evaluation intervals
+
+## GUI Interface - Play Against the AI!
+
+**NEW!** You can now play against your trained AI agent using a user-friendly GUI interface!
+
+### Quick Start
+
+1. **Make sure you have a trained model:**
+
+   ```bash
+   # The GUI will automatically try to load models/selfplay_best_agent.pth
+   # If no model is found, you can load one using the "Load Model" button
+   ```
+
+2. **Run the GUI:**
+   ```bash
+   python play_against_ai.py
+   ```
+
+### Features
+
+- **Interactive Gameplay:** Click on cards to play them, click on numbers to bid
+- **Real-time Updates:** See game state, bidding, tricks won, and current trick
+- **AI Opponents:** Play against 3 AI players controlled by your trained agent
+- **Model Loading:** Load different trained models via file dialog
+- **Game Rules:** Full implementation of Judgement rules with validation
+
+### GUI Layout
+
+- **Left Panel:** Game information (status, round, trump, bidding, tricks)
+- **Center Panel:** Your hand as clickable card buttons
+- **Right Panel:** AI players' card counts
+- **Action Panel:** Bidding buttons or card selection
+
+### Testing the GUI
+
+Before running the full GUI, you can test the components:
+
+```bash
+# Test that everything works
+python test_gui.py
+
+# See a demo of the game flow
+python demo_gui.py
+```
+
+### Documentation
+
+For detailed GUI documentation, see [`GUI_README.md`](GUI_README.md).
 
 ## Contributing
 

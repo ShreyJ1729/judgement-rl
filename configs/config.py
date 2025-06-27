@@ -27,7 +27,7 @@ class TrainingConfig:
     hidden_dim: int = 256
 
     # Training parameters
-    num_episodes: int = 1000
+    num_episodes: int = 100
     episodes_per_update: int = 10
     batch_size: int = 64
     epsilon: float = 0.1
@@ -44,7 +44,7 @@ class TrainingConfig:
     monitor_max_points: int = 1000
 
     # Model saving
-    save_interval: int = 1000  # Save model every N episodes
+    save_interval: int = 100  # Save model every N episodes
     models_dir: str = "models"
 
     # Evaluation

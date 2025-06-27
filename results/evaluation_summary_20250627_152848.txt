@@ -1,0 +1,16 @@
+JUDGEMENT RL MODEL EVALUATION SUMMARY
+==================================================
+
+Model: ../models/selfplay_best_agent.pth
+Games: 100
+Agent Position: 0
+
+TRAINED AGENT:
+  Win Rate: 0.390
+  Avg Reward: -2.250
+  Declaration Success: 0.250
+
+RANDOM AGENTS:
+  Win Rate: 0.203
+  Avg Reward: -1.092
+  Declaration Success: 0.193

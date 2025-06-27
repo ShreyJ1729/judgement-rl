@@ -2,4 +2,5 @@ torch>=2.0.0
 numpy>=1.21.0
 gym>=0.26.0
 matplotlib>=3.5.0
-tqdm 
+tqdm
+Pillow>=8.0.0 

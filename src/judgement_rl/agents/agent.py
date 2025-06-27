@@ -6,7 +6,7 @@ import numpy as np
 from typing import Dict, List, Tuple, Any, Optional
 from collections import deque
 import random
-from state_encoder import StateEncoder
+from ..utils.state_encoder import StateEncoder
 
 
 class PolicyNetwork(nn.Module):
@@ -240,7 +240,6 @@ class PPOAgent:
                         # Calculate the actual final reward for player 0
                         final_reward = env._calculate_reward(0)
                         reward = final_reward
-                        print(f"Agent (Player 0) final reward: {final_reward}")
 
                     self.memory.add(
                         encoded_state,
@@ -526,7 +525,6 @@ class SelfPlayTrainer:
             if done:
                 final_reward = self.env._calculate_reward(current_player)
                 reward = final_reward
-                print(f"Player {current_player} final reward: {final_reward}")
 
             agent.memory.add(
                 encoded_state,
@@ -589,11 +587,6 @@ class SelfPlayTrainer:
                             param.data = (
                                 best_param.data + torch.randn_like(param.data) * 0.01
                             )
-
-                print(
-                    f"Episode {episode + 1}: Best agent {self.current_best_agent}, "
-                    f"Avg reward: {np.mean(episode_rewards):.2f}"
-                )
 
     def save_best_agent(self, filepath: str):
         """Save the best performing agent."""

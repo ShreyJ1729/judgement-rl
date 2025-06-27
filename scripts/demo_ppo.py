@@ -7,9 +7,16 @@ This shows how to use the implementation from Step 6.
 import torch
 import numpy as np
 import time
-from judgement_env import JudgementEnv
-from state_encoder import StateEncoder
-from agent import PPOAgent, SelfPlayTrainer
+import matplotlib.pyplot as plt
+import sys
+import os
+
+# Add the src directory to the path so we can import from judgement_rl
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+
+from judgement_rl.environment.judgement_env import JudgementEnv
+from judgement_rl.utils.state_encoder import StateEncoder
+from judgement_rl.agents.agent import PPOAgent, SelfPlayTrainer
 
 
 def quick_demo():

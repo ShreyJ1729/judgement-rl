@@ -11,12 +11,21 @@ import os
 import argparse
 from tqdm import tqdm
 import time
+import sys
 
-from judgement_env import JudgementEnv
-from state_encoder import StateEncoder
-from agent import PPOAgent, SelfPlayTrainer
-from realtime_monitor import create_monitor_and_callback
+# Add the src directory to the path so we can import from judgement_rl
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+
+from judgement_rl.environment.judgement_env import JudgementEnv
+from judgement_rl.utils.state_encoder import StateEncoder
+from judgement_rl.agents.agent import PPOAgent, SelfPlayTrainer
+
+# Add the configs directory to the path
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "configs"))
 from config import TrainingConfig, EnvironmentConfig, AgentConfig
+
+# Import realtime_monitor from the same directory
+import realtime_monitor
 
 
 def plot_training_stats(stats: dict, save_path: str = None):
@@ -130,11 +139,10 @@ def train_selfplay(config: TrainingConfig):
     callback = None
     if config.use_monitor:
         agent_names = [f"Self-Play Agent {i}" for i in range(config.num_agents)]
-        monitor, callback = create_monitor_and_callback(
+        monitor, callback = realtime_monitor.create_monitor_and_callback(
             agent_names, max_points=config.monitor_max_points
         )
         monitor.start_monitoring()
-        print("Real-time monitoring enabled. Close the plot window to stop monitoring.")
 
     # Create models directory
     os.makedirs(config.models_dir, exist_ok=True)
@@ -217,7 +225,7 @@ def train_selfplay(config: TrainingConfig):
                 )
                 trainer.save_best_agent(model_path)
 
-            # Evaluate periodically
+            # Evaluate periodically and update progress bar
             if (episode + 1) % config.eval_interval == 0:
                 best_agent = trainer.agents[trainer.current_best_agent]
                 eval_results = evaluate_agent(
@@ -247,7 +255,8 @@ def train_selfplay(config: TrainingConfig):
         monitor.save_metrics(
             os.path.join(config.models_dir, "selfplay_training_metrics.json")
         )
-        monitor.stop_monitoring()
+        if hasattr(monitor, "running") and monitor.running:
+            monitor.stop_monitoring()
 
     # Plot training stats
     plot_training_stats(
@@ -262,6 +271,41 @@ def train_selfplay(config: TrainingConfig):
     for metric, value in eval_results.items():
         print(f"{metric}: {value:.3f}")
 
+    # Evaluate against 3 random players
+    print("\n=== Evaluation vs 3 Random Players ===")
+    random_env = JudgementEnv(num_players=4, max_cards=config.max_cards)
+    num_games = config.eval_games
+    total_rewards = []
+    total_tricks_won = []
+    total_declarations_met = []
+    for _ in range(num_games):
+        state = random_env.reset()
+        episode_reward = 0
+        done = False
+        while not done:
+            current_player = random_env.current_player
+            legal_actions = random_env.get_legal_actions(current_player)
+            if current_player == 0:
+                action, _, _ = best_agent.select_action(
+                    state, legal_actions, epsilon=0.0
+                )
+            else:
+                action = np.random.choice(legal_actions)
+            next_state, reward, done = random_env.step(current_player, action)
+            if current_player == 0:
+                episode_reward += reward
+            state = next_state
+        tricks_won = random_env.tricks_won[0]
+        declaration = random_env.declarations[0]
+        declaration_met = 1 if tricks_won == declaration else 0
+        total_rewards.append(episode_reward)
+        total_tricks_won.append(tricks_won)
+        total_declarations_met.append(declaration_met)
+    print(f"avg_reward: {np.mean(total_rewards):.3f}")
+    print(f"std_reward: {np.std(total_rewards):.3f}")
+    print(f"avg_tricks_won: {np.mean(total_tricks_won):.3f}")
+    print(f"declaration_success_rate: {np.mean(total_declarations_met):.3f}")
+
     return trainer
 
 
@@ -274,7 +318,7 @@ def main():
         "--no-monitor", action="store_true", help="Disable real-time monitoring"
     )
     parser.add_argument(
-        "--episodes", type=int, default=1000, help="Number of episodes for training"
+        "--episodes", type=int, default=100, help="Number of episodes for training"
     )
     parser.add_argument(
         "--batch-size", type=int, default=64, help="Batch size for training"

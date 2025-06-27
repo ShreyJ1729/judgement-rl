@@ -11,11 +11,15 @@ import os
 import argparse
 from typing import Dict, List, Optional
 import time
+import sys
 
-from judgement_env import JudgementEnv
-from state_encoder import StateEncoder
-from agent import PPOAgent
-from heuristic_agent import HeuristicAgent
+# Add the src directory to the path so we can import from judgement_rl
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+
+from judgement_rl.environment.judgement_env import JudgementEnv
+from judgement_rl.utils.state_encoder import StateEncoder
+from judgement_rl.agents.agent import PPOAgent
+from judgement_rl.agents.heuristic_agent import HeuristicAgent
 
 
 def evaluate_agent(

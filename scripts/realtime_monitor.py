@@ -346,10 +346,18 @@ class RealtimeMonitor:
     def stop_monitoring(self):
         """Stop the real-time monitoring."""
         self.running = False
-        if self.ani:
-            self.ani.event_source.stop()
+        if self.ani and hasattr(self.ani, "event_source") and self.ani.event_source:
+            try:
+                self.ani.event_source.stop()
+            except Exception as e:
+                # Ignore errors if animation is already stopped
+                pass
         if self.fig:
-            plt.close(self.fig)
+            try:
+                plt.close(self.fig)
+            except Exception as e:
+                # Ignore errors if figure is already closed
+                pass
 
     def save_metrics(self, filename: str):
         """Save current metrics to a file."""

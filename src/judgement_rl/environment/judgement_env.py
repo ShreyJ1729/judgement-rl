@@ -168,7 +168,6 @@ class JudgementEnv:
         # Remove card from hand and add to current trick
         self.hands[player_idx].pop(card_idx)
         self.current_trick.append((player_idx, card))
-        print(f"Player {player_idx} plays: {card}")
 
         # Set led suit if this is the first card
         if len(self.current_trick) == 1:
@@ -180,7 +179,6 @@ class JudgementEnv:
             # Resolve the trick
             winner = self._resolve_trick()
             self.tricks_won[winner] += 1
-            print(f"Player {winner} won the trick!")
 
             # Calculate intermediate reward for winning the trick
             intermediate_reward = self._calculate_intermediate_reward(winner)
@@ -193,14 +191,10 @@ class JudgementEnv:
             if len(self.hands[0]) == 0:
                 # Calculate final rewards for the winner of the last trick
                 final_reward = self._calculate_reward(winner)
-                print(f"Game finished! Final rewards: {self.tricks_won}")
-                print(f"Declarations: {self.declarations}")
-                print(f"Player {winner} final reward: {final_reward}")
                 return self._get_state(winner), final_reward, True
 
             # Start new trick: winner goes first
             self.current_player = winner
-            print(f"Next trick starts with Player {winner}")
             return self._get_state(winner), intermediate_reward, False
         else:
             # Move to next player in order (0, 1, 2, 3)
@@ -343,53 +337,31 @@ class JudgementEnv:
 
     def render(self):
         """Render the current game state for debugging."""
-        print(f"\n=== Round {self.round_number} ===")
-        print(f"Trump: {self.trump}")
-        print(f"Cards per player: {self.round_cards}")
-        print(f"Phase: {self.phase}")
-        print(f"Declarations: {self.declarations}")
-        print(f"Tricks won: {self.tricks_won}")
-        print(f"Current trick: {self.current_trick}")
-        print(f"Current player: {self.current_player}")
-        for i, hand in enumerate(self.hands):
-            print(f"Player {i} hand: {hand}")
+        # Silent render for training - no output
+        pass
 
 
 # Example usage and testing
 if __name__ == "__main__":
     # Test the environment
-    env = JudgementEnv(num_players=4)
-
-    print("Testing Judgement Environment")
-    print("=" * 40)
+    env = JudgementEnv(num_players=4, max_cards=7)
 
     # Test a few rounds
     for round_num in range(3):
-        print(f"\n--- Round {round_num + 1} ---")
         state = env.reset()
-        env.render()
 
-        # Simulate bidding
+        # Test bidding phase
         for player in range(4):
             legal_actions = env.get_legal_actions(player)
-            bid = random.choice(legal_actions)
+            bid = legal_actions[0]  # Take first legal bid
             state, reward, done = env.step(player, bid)
-            print(f"Player {player} bids: {bid}")
-            if done:
-                print(f"Game ended with reward: {reward}")
+
+        # Test playing phase
+        while not done:
+            current_player = env.current_player
+            legal_actions = env.get_legal_actions(current_player)
+            if legal_actions:
+                action = legal_actions[0]  # Take first legal action
+                state, reward, done = env.step(current_player, action)
+            else:
                 break
-
-        if not done:
-            # Simulate card playing
-            while not done:
-                player = env.current_player
-                legal_actions = env.get_legal_actions(player)
-                if legal_actions:
-                    action = random.choice(legal_actions)
-                    state, reward, done = env.step(player, action)
-                    print(f"Player {player} plays card {action}")
-                else:
-                    break
-
-        print(f"Final state: {state}")
-        print(f"Final reward: {reward}")
