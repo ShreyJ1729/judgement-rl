@@ -47,6 +47,7 @@ class JudgementEnv:
         self.tricks_won = [0] * self.num_players
         self.current_trick = []
         self.led_suit = None
+        self.led_player = None  # Track who led the current trick
         self.phase = "bidding"  # "bidding" or "playing"
 
         # Set the first bidder for this round
@@ -89,6 +90,7 @@ class JudgementEnv:
             "phase": self.phase,
             "current_player": self.current_player,
             "led_suit": self.led_suit,
+            "led_player": self.led_player,
         }
 
         # Add visible cards in the one-card round
@@ -117,6 +119,13 @@ class JudgementEnv:
         # Validate bid
         if not (0 <= bid <= self.round_cards):
             return self._get_state(player_idx), -100, True  # Invalid bid penalty
+
+        # Check if this is the last player and if the bid would make total = num_players
+        num_bids = sum(1 for d in self.declarations if d is not None)
+        if num_bids == self.num_players - 1:
+            current_total = sum(d for d in self.declarations if d is not None)
+            if current_total + bid == self.num_players:
+                return self._get_state(player_idx), -100, True  # Invalid total penalty
 
         self.declarations[player_idx] = bid
 
@@ -164,6 +173,7 @@ class JudgementEnv:
         # Set led suit if this is the first card
         if len(self.current_trick) == 1:
             self.led_suit = self._get_card_suit(card)
+            self.led_player = player_idx
 
         # Check if trick is complete
         if len(self.current_trick) == self.num_players:
@@ -171,19 +181,27 @@ class JudgementEnv:
             winner = self._resolve_trick()
             self.tricks_won[winner] += 1
             print(f"Player {winner} won the trick!")
+
+            # Calculate intermediate reward for winning the trick
+            intermediate_reward = self._calculate_intermediate_reward(winner)
+
             self.current_trick = []
             self.led_suit = None
+            self.led_player = None
 
             # Check if round is complete
             if len(self.hands[0]) == 0:
-                # Calculate final rewards
-                rewards = [self._calculate_reward(i) for i in range(self.num_players)]
-                return self._get_state(winner), rewards[player_idx], True
+                # Calculate final rewards for the winner of the last trick
+                final_reward = self._calculate_reward(winner)
+                print(f"Game finished! Final rewards: {self.tricks_won}")
+                print(f"Declarations: {self.declarations}")
+                print(f"Player {winner} final reward: {final_reward}")
+                return self._get_state(winner), final_reward, True
 
             # Start new trick: winner goes first
             self.current_player = winner
             print(f"Next trick starts with Player {winner}")
-            return self._get_state(winner), 0, False
+            return self._get_state(winner), intermediate_reward, False
         else:
             # Move to next player in order (0, 1, 2, 3)
             next_player = (player_idx + 1) % self.num_players
@@ -280,19 +298,40 @@ class JudgementEnv:
         else:
             return -10 * abs(n - actual)  # Penalty for missing bid
 
+    def _calculate_intermediate_reward(self, player_idx: int) -> float:
+        """
+        Calculate intermediate reward for winning a trick.
+        Provides small positive rewards for winning tricks up to the bid,
+        and small negative rewards for winning tricks beyond the bid.
+        """
+        n = self.declarations[player_idx]
+        actual = self.tricks_won[player_idx]
+
+        if n is None:
+            return 0  # No bid yet, no intermediate reward
+
+        if actual <= n:
+            # Winning tricks up to the bid is good
+            return 1.0
+        else:
+            # Winning tricks beyond the bid is slightly bad
+            return -0.5
+
     def get_legal_actions(self, player_idx: int) -> List[int]:
         """Get the list of legal actions for the current player."""
         if self.phase == "bidding":
             # All bids from 0 to round_cards are legal, except for last bidder
             legal_bids = list(range(self.round_cards + 1))
-            # Last bidder restriction
+
+            # Check if this is the last player to bid
             num_bids = sum(1 for d in self.declarations if d is not None)
             if num_bids == self.num_players - 1:
-                forbidden = self.round_cards - sum(
-                    d for d in self.declarations if d is not None
-                )
-                if 0 <= forbidden <= self.round_cards:
-                    legal_bids.remove(forbidden)
+                # Calculate current total of bids
+                current_total = sum(d for d in self.declarations if d is not None)
+                # The forbidden bid is the one that would make total = num_players
+                forbidden_bid = self.num_players - current_total
+                if 0 <= forbidden_bid <= self.round_cards:
+                    legal_bids.remove(forbidden_bid)
             return legal_bids
         else:
             # Legal card indices (cards that follow suit if possible)

@@ -55,8 +55,8 @@ class StateEncoder:
         # Led suit (one-hot + none)
         led_suit_size = len(self.suits) + 1
 
-        # Round cards (one-hot)
-        round_cards_size = self.max_cards
+        # Led player (one-hot - always exists during playing)
+        led_player_size = self.num_players
 
         # Others cards (for one-card rounds)
         others_cards_size = (self.num_players - 1) * self.card_dim
@@ -70,7 +70,7 @@ class StateEncoder:
             + phase_size
             + current_player_size
             + led_suit_size
-            + round_cards_size
+            + led_player_size
             + others_cards_size
         )
 
@@ -105,8 +105,8 @@ class StateEncoder:
         # Encode led suit
         encoded.extend(self._encode_led_suit(state.get("led_suit")))
 
-        # Encode round cards
-        encoded.extend(self._encode_round_cards(state["round_cards"]))
+        # Encode led player
+        encoded.extend(self._encode_led_player(state.get("led_player")))
 
         # Encode others cards (for one-card rounds)
         encoded.extend(self._encode_others_cards(state.get("others_cards", [])))
@@ -215,11 +215,12 @@ class StateEncoder:
             encoding[self.suit_to_idx[led_suit]] = 1.0
         return encoding
 
-    def _encode_round_cards(self, round_cards: int) -> List[float]:
-        """Encode the number of cards in the round."""
-        encoding = [0.0] * self.max_cards
-        if 1 <= round_cards <= self.max_cards:
-            encoding[round_cards - 1] = 1.0
+    def _encode_led_player(self, led_player: int) -> List[float]:
+        """Encode the led player."""
+        encoding = [0.0] * self.num_players
+        if led_player is not None and 0 <= led_player < self.num_players:
+            encoding[led_player] = 1.0
+        # If led_player is None (during bidding), all zeros is fine
         return encoding
 
     def _encode_others_cards(self, others_cards: List[str]) -> List[float]:
