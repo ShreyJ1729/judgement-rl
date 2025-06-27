@@ -28,7 +28,7 @@ class TrainingConfig:
 
     # Training parameters
     num_episodes: int = 100
-    episodes_per_update: int = 10
+    episodes_per_update: int = 25
     batch_size: int = 64
     epsilon: float = 0.1
     epsilon_decay: float = 0.995

@@ -1,0 +1,5 @@
+[console_scripts]
+judgement-evaluate = judgement_rl.cli.evaluate:main
+judgement-gui = judgement_rl.cli.gui:main
+judgement-monitor = judgement_rl.cli.monitor:main
+judgement-train = judgement_rl.cli.train:main
