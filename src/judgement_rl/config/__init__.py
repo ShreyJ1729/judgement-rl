@@ -11,11 +11,13 @@ from .config import (
     AgentConfig,
     MonitoringConfig,
     EvaluationConfig,
+    GUIConfig,
     DEFAULT_TRAINING_CONFIG,
     DEFAULT_ENV_CONFIG,
     DEFAULT_AGENT_CONFIG,
     DEFAULT_MONITORING_CONFIG,
     DEFAULT_EVALUATION_CONFIG,
+    DEFAULT_GUI_CONFIG,
 )
 
 __all__ = [
@@ -24,9 +26,11 @@ __all__ = [
     "AgentConfig",
     "MonitoringConfig",
     "EvaluationConfig",
+    "GUIConfig",
     "DEFAULT_TRAINING_CONFIG",
     "DEFAULT_ENV_CONFIG",
     "DEFAULT_AGENT_CONFIG",
     "DEFAULT_MONITORING_CONFIG",
     "DEFAULT_EVALUATION_CONFIG",
+    "DEFAULT_GUI_CONFIG",
 ]
